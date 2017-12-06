@@ -14,8 +14,9 @@ pids
 *.seed
 *.pid.lock
 
-# Compiled binary addons (http://nodejs.org/api/addons.html)
+# Compiled code
 build/Release
+dist/
 
 # Dependency directories
 node_modules/
