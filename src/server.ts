@@ -1,8 +1,13 @@
 import * as bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
+import * as dotenvExpand from 'dotenv-expand'
 import * as express from 'express'
 import * as logger from 'morgan'
 import * as path from 'path'
+import * as passport from 'passport'
+import { Strategy as LocalStrategy } from 'passport-local'
+import * as session from 'express-session'
+import * as postgresSession from 'connect-pg-simple'
 
 import * as noteController from './controllers/note'
 
@@ -11,8 +16,16 @@ import * as noteController from './controllers/note'
  */
 const app = express()
 
-// Load environment variables from file `.env` to `process.env`
-dotenv.config()
+const PostgresStore = postgresSession(session)
+
+/**
+ * Load environment variables from file `.env` to `process.env`.
+ * @see https://www.npmjs.com/package/dotenv#faq
+ *
+ * 'dotenv-expand' add supports for variable expansion.
+ * @see https://github.com/motdotla/dotenv-expand
+ */
+dotenvExpand(dotenv.config())
 
 
 /**
@@ -48,6 +61,36 @@ app.set('view engine', 'pug')
  */
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
+
+/**
+ * About session options,
+ * @see https://github.com/expressjs/session#options
+ *
+ * Here we use Postgres as a storage for session (Redis could be
+ * used for faster performance here).
+ * 1 extra thing we need to do is creating a `session` table in
+ * Postgres. To do this, use the file `asset/scripts/sql/table.sql`:
+ *
+ * ```
+ * psql DATABASE_NAME < asset/scripts/sql/table.sql
+ * ```
+ *
+ * @see https://www.npmjs.com/package/connect-pg-simple
+ */
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET,
+  store: new PostgresStore({
+    tableName : 'session',
+    conString: process.env.POSTGRES_CONNECTION_STRING
+  }),
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
+
 /**
  * Middleware `morgan` logs request and response. In production, log should
  * also be written to file.

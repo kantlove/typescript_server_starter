@@ -48,7 +48,7 @@ export function db<A>(q: Query<A>) {
 async function connect(): Promise<Connection> {
   const options: ConnectionOptions = {
     type: 'postgres',
-    host: process.env.POSTGRES_URI,
+    host: process.env.POSTGRES_HOST,
     port: parseInt(process.env.POSTGRES_PORT),
     username: process.env.POSTGRES_USERNAME,
     password: process.env.POSTGRES_PASSWORD,
