@@ -24,6 +24,7 @@
     "dotenv": "^4.0.0",
     "dotenv-expand": "^4.0.1",
     "express": "^4.16.2",
+    "express-flash": "^0.0.2",
     "express-session": "^1.15.6",
     "morgan": "^1.9.0",
     "nodemon": "^1.12.5",
@@ -31,6 +32,7 @@
     "passport-local": "^1.0.0",
     "pg": "^7.4.0",
     "pug": "^2.0.0-rc.4",
+    "ts-option": "^1.1.4",
     "typeorm": "^0.1.7",
     "typescript": "^2.6.2"
   },

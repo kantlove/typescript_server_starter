@@ -1,11 +1,10 @@
-import { ConnectionOptions } from 'typeorm/connection/ConnectionOptions'
 import 'reflect-metadata'
 
 import { createConnection } from 'typeorm'
 import { Connection } from 'typeorm/connection/Connection'
+import { ConnectionOptions } from 'typeorm/connection/ConnectionOptions'
 
 import { BaseError } from '../common/error'
-import { Note } from '../models/Note'
 
 export class DatabaseNotConnectedError extends BaseError { }
 export class QueryError extends BaseError { }
@@ -31,11 +30,15 @@ export type Query<A> = (c: Connection) => Promise<A>
 export function db<A>(q: Query<A>) {
   return connect()
     .then(async connection => {
-      console.log(`Established a connection to DB ${connection.options.database}`)
+      console.log(`Established a connection named "${connection.name}" to DB ${connection.options.database}`)
 
-      const rs = await q(connection)
-      connection.close()
-      return rs
+      try {
+        return await q(connection)
+      }
+      finally {
+        console.log(`Close connection "${connection.name}"`)
+        connection.close()
+      }
     })
     .catch((err: Error) => {
       throw new QueryError(err.message)
@@ -54,8 +57,7 @@ async function connect(): Promise<Connection> {
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DATABASE,
     entities: [
-      // __dirname + '/models/*.js' // `__dirname` is the directory name of the current module
-      Note // TODO: use the method above to automatically find models instead
+      __dirname + '/../models/*.js' // `__dirname` is the directory name of the current module
     ],
     synchronize: true,
     logging: false

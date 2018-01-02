@@ -1,14 +1,18 @@
+import './config/passport'
+
 import * as bodyParser from 'body-parser'
+import * as postgresSession from 'connect-pg-simple'
 import * as dotenv from 'dotenv'
 import * as dotenvExpand from 'dotenv-expand'
 import * as express from 'express'
-import * as logger from 'morgan'
-import * as path from 'path'
-import * as passport from 'passport'
-import { Strategy as LocalStrategy } from 'passport-local'
+import * as flash from 'express-flash'
 import * as session from 'express-session'
-import * as postgresSession from 'connect-pg-simple'
+import * as logger from 'morgan'
+import * as passport from 'passport'
+import * as path from 'path'
 
+import * as loginController from './controllers/login'
+import * as registerController from './controllers/register'
 import * as noteController from './controllers/note'
 
 /**
@@ -22,7 +26,7 @@ const PostgresStore = postgresSession(session)
  * Load environment variables from file `.env` to `process.env`.
  * @see https://www.npmjs.com/package/dotenv#faq
  *
- * 'dotenv-expand' add supports for variable expansion.
+ * `dotenv-expand` add supports for variable expansion.
  * @see https://github.com/motdotla/dotenv-expand
  */
 dotenvExpand(dotenv.config())
@@ -67,7 +71,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
  * @see https://github.com/expressjs/session#options
  *
  * Here we use Postgres as a storage for session (Redis could be
- * used for faster performance here).
+ * used here for faster performance).
  * 1 extra thing we need to do is creating a `session` table in
  * Postgres. To do this, use the file `asset/scripts/sql/table.sql`:
  *
@@ -82,14 +86,26 @@ app.use(session({
   saveUninitialized: true,
   secret: process.env.SESSION_SECRET,
   store: new PostgresStore({
-    tableName : 'session',
+    tableName: 'session',
     conString: process.env.POSTGRES_CONNECTION_STRING
   }),
   cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
 }))
 
+/**
+ * Middleware `passport` abstract the process of user authentication.
+ * We only need to define how to find and store users.
+ * @see http://www.passportjs.org/
+ */
 app.use(passport.initialize())
-app.use(passport.session())
+app.use(passport.session()) // allow `passport` to use session
+
+/**
+ * Middleware `express-flash` adds the ability to send a message to front-end.
+ * There, we can display the message. This is done in file `views/flash.pug`.
+ * @see https://www.npmjs.com/package/express-flash
+ */
+app.use(flash())
 
 /**
  * Middleware `morgan` logs request and response. In production, log should
@@ -98,6 +114,14 @@ app.use(passport.session())
  * @see https://github.com/expressjs/morgan
  */
 app.use(logger('dev'))
+
+/**
+ * Catch all errors.
+ * @see http://expressjs.com/en/guide/using-middleware.html#middleware.error-handling
+ */
+app.use(function(err: any, req: any, res: any, next: any) {
+  console.log(err)
+})
 
 
 /**
@@ -109,10 +133,18 @@ app.use(logger('dev'))
  */
 app.get('/', (req, res) => res.send('Hello World'))
 app
+  .route('/login')
+  .get(loginController.index)
+  .post(loginController.login)
+app
+  .route('/register')
+  .get(registerController.index)
+  .post(registerController.register)
+app
   .route('/note')
-  .get(noteController.index)
-  .post(noteController.create)
-  .delete(noteController.remove)
+  .get(loginController.authenticate, noteController.index)
+  .post(loginController.authenticate, noteController.create)
+  .delete(loginController.authenticate, noteController.remove)
 
 
 /**

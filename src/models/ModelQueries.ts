@@ -1,14 +1,16 @@
+import { Option, option } from 'ts-option'
 import { Repository } from 'typeorm'
 import { Connection } from 'typeorm/connection/Connection'
 
 import { Query, QueryError } from '../services/db'
+import { BaseModel, ModelAlreadyExists } from './base'
 
 /**
  * This class contains common queries of all models.
  *
  * @template A type of the model.
  */
-export class ModelQueries<A> {
+export class ModelQueries<A extends BaseModel> {
   private repr: Function
 
   /**
@@ -38,16 +40,40 @@ export class ModelQueries<A> {
   }
 
   /**
+   * Returns a query to find the first instance that matches
+   * the condition. If no result is found, the query returns `None`.
+   * @param conditions how to find this instance.
+   */
+  findOne(conditions: Partial<A>): Query<Option<A>> {
+    return async connection => {
+      const repo = this.getRepo(connection)
+      return option(await repo.findOne({ where: conditions }))
+    }
+  }
+
+  /**
+   * Returns a query to find the first instance that matches
+   * the condition. If no result is found, the query returns `None`.
+   * @param conditions how to find this instance.
+   */
+  findOneByID(id: number): Query<Option<A>> {
+    const condition: Partial<A> = { id: id } as A
+    return this.findOne(condition)
+  }
+
+  /**
    * Returns a query to insert an instance of this model to DB.
    * Throws error if the instance already exists.
    * @param a instance to be saved.
    */
   insert(a: A): Query<A> {
     return async connection => {
-      return this.getRepo(connection).insert(a)
-      .then(_ => a)
-      .catch((err: Error) => {
-        throw new QueryError(err.message)
+      const maybeA = await this.findOne(a)(connection)
+      return maybeA.match({
+        some: _ => {
+          throw new ModelAlreadyExists()
+        },
+        none: () => this.getRepo(connection).insert(a).then(_ => a)
       })
     }
   }

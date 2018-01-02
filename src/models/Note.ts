@@ -1,17 +1,18 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
+import { BaseModel } from './base'
 import { ModelQueries } from './ModelQueries'
 
 @Entity()
-export class Note {
+export class Note implements BaseModel {
   @PrimaryGeneratedColumn()
-  id: number
+  readonly id: number
 
   @Column('varchar')
-  name: string
+  readonly name: string
 
   @Column('text')
-  text: string
+  readonly text: string
 
   static queries = new ModelQueries<Note>(Note)
 
