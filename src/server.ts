@@ -12,6 +12,7 @@ import * as passport from 'passport'
 import * as path from 'path'
 
 import * as loginController from './controllers/login'
+import * as logoutController from './controllers/logout'
 import * as registerController from './controllers/register'
 import * as noteController from './controllers/note'
 
@@ -118,6 +119,7 @@ app.use(logger('dev'))
 /**
  * Catch all errors.
  * @see http://expressjs.com/en/guide/using-middleware.html#middleware.error-handling
+ * @todo close all active DB connections.
  */
 app.use(function(err: any, req: any, res: any, next: any) {
   console.log(err)
@@ -132,6 +134,7 @@ app.use(function(err: any, req: any, res: any, next: any) {
  * ============================================================================
  */
 app.get('/', (req, res) => res.send('Hello World'))
+app.get('/logout', logoutController.logout)
 app
   .route('/login')
   .get(loginController.index)
