@@ -8,16 +8,12 @@ export class Note implements BaseModel {
   @PrimaryGeneratedColumn()
   readonly id: number
 
-  @Column('varchar')
-  readonly name: string
-
   @Column('text')
   readonly text: string
 
   static queries = new ModelQueries<Note>(Note)
 
-  constructor(name: string, text: string) {
-    this.name = name
+  constructor(text: string) {
     this.text = text
   }
 }

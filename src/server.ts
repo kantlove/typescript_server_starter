@@ -143,11 +143,7 @@ app
   .route('/register')
   .get(registerController.index)
   .post(registerController.register)
-app
-  .route('/note')
-  .get(loginController.authenticate, noteController.index)
-  .post(loginController.authenticate, noteController.create)
-  .delete(loginController.authenticate, noteController.remove)
+app.get('/note', loginController.authenticate, noteController.index)
 
 
 /**

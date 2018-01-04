@@ -38,7 +38,7 @@ export function db<A>(q: Query<A>): Promise<A> {
 /**
  * Returns a connection to the current DB. This will create a new connection
  * if there is no existing one.
- * 
+ *
  * So currently, our app only uses 1 single DB connection.
  */
 async function connect(): Promise<Connection> {
