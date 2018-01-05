@@ -5,6 +5,8 @@ import { db } from '../services/db'
 
 export const index = (req: Request, res: Response) => {
   db(async connection => {
+    // Clear all notes
+    await remove()
     // Add some dummy notes
     await init()
 
@@ -38,10 +40,6 @@ async function createNote(text: string) {
   })
 }
 
-export const remove = (req: Request, res: Response) => {
-  db(async connection => {
-    const condition = req.body as Partial<Note>
-    const removedNotes = await Note.queries.remove(condition)(connection)
-    res.send(removedNotes)
-  })
+async function remove(condition: Partial<Note> = {}) {
+  await db(async connection => await Note.queries.remove(condition)(connection))
 }

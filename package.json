@@ -1,16 +1,17 @@
 {
-  "name": "typescript_server",
+  "name": "typescript_server_starter",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run build && npm run watch",
-    "build": "npm run build-ts && npm run tslint",
+    "build": "npm run build-ts && npm run tslint &&  npm run build-doc",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve\"",
     "serve": "nodemon dist/server.js",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
-    "tslint": "tslint -c tslint.json -p tsconfig.json"
+    "tslint": "tslint -c tslint.json -p tsconfig.json",
+    "build-doc": "apidoc -i src -f \".*\\.ts$\" -o dist/api"
   },
   "keywords": [
     "typescript"

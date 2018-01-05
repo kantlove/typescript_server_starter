@@ -11,10 +11,11 @@ import * as logger from 'morgan'
 import * as passport from 'passport'
 import * as path from 'path'
 
+import * as apiNoteController from './controllers/api/note'
 import * as loginController from './controllers/login'
 import * as logoutController from './controllers/logout'
-import * as registerController from './controllers/register'
 import * as noteController from './controllers/note'
+import * as registerController from './controllers/register'
 
 /**
  * Create Express server.
@@ -125,6 +126,17 @@ app.use(function(err: any, req: any, res: any, next: any) {
   console.log(err)
 })
 
+/**
+ * When built, module `apidoc` will generate html files that contains the
+ * documentation of our API under `apiDocPath`.
+ * Now we have to tell Express to serve those html files as static files.
+ * This means browsing `/api/v0/index.html` will show the content of the file
+ * directly.
+ * @see http://expressjs.com/en/starter/static-files.html
+ */
+const apiDocPath = path.join(__dirname, '../dist/api')
+app.use('/api/v0', loginController.authenticate, express.static(apiDocPath))
+
 
 /**
  * ============================================================================
@@ -143,7 +155,10 @@ app
   .route('/register')
   .get(registerController.index)
   .post(registerController.register)
-app.get('/note', loginController.authenticate, noteController.index)
+app
+  .route('/note')
+  .get(loginController.authenticate, noteController.index)
+  .delete(loginController.authenticate, apiNoteController.remove)
 
 
 /**

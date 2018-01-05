@@ -1,7 +1,9 @@
 extends layout
 
 block content
-  a(href='/logout') Log Out
+  div: a(href='/logout') Log Out
+
+  div: a(href='/api/v0/index.html') API Documentation
 
   h1 All notes
   for note in notes

@@ -1,0 +1,7 @@
+{
+  "version": "0.1.0",
+  "description": "API Documentation",
+  "title": "Typescript Server Starter API",
+  "url" : "https://localhost:3000/v0/api",
+  "sampleUrl": "https://localhost:3000/v0/api"
+}
